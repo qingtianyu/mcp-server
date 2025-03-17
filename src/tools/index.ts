@@ -11,26 +11,29 @@ import { tools, apiMap } from '../config/apiEndpoints.js';
 export function registerTools(server: Server) {
   // 注册可用工具
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: tools
+    tools: tools,
   }));
 
   // 处理工具调用请求
-  server.setRequestHandler(CallToolRequestSchema, async (request: { params: { name: string; arguments?: unknown, _meta?: unknown; } }) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request) : Promise<any> => {
     
     try {
       const endpoint = apiMap[request.params.name]
       if (!endpoint) {
         throw new McpError(ErrorCode.MethodNotFound, '未知的工具方法');
       }
+      console.log('endpoint', endpoint);
       if(endpoint.method === 'GET') {
         const params = request.params.arguments;
-        const response = await apiClient.get(endpoint.path, {
-          params
-        });
+        const response = await apiClient.get(endpoint.path, { params });
         return { content: [{ type: 'text', text: JSON.stringify(response.data, null, 2) }] };
-      } else {
+      } else if(endpoint.method === 'POST') {
         const params = request.params.arguments;
         const response = await apiClient.post(endpoint.path, params);
+        return { content: [{ type: 'text', text: JSON.stringify(response.data, null, 2) }] };
+      } else if(endpoint.method === 'PUT') {
+        const params = request.params.arguments;
+        const response = await apiClient.put(endpoint.path, params);
         return { content: [{ type: 'text', text: JSON.stringify(response.data, null, 2) }] };
       }
     } catch (error) {

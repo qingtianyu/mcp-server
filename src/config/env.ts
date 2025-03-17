@@ -8,6 +8,7 @@ interface EnvConfig {
   PASSWORD: string;
   TENANT_ID: string;
   REJECT_UNAUTHORIZED: boolean;
+  ALLOWED_APIS: string[];
 }
 
 export const config: EnvConfig = {
@@ -17,5 +18,6 @@ export const config: EnvConfig = {
   USERNAME: process.env.USERNAME!,
   PASSWORD: process.env.PASSWORD!,
   TENANT_ID: process.env.TENANT_ID!,
-  REJECT_UNAUTHORIZED: process.env.REJECT_UNAUTHORIZED === 'true'
+  REJECT_UNAUTHORIZED: process.env.REJECT_UNAUTHORIZED === 'true',
+  ALLOWED_APIS: process.env.ALLOWED_APIS ? process.env.ALLOWED_APIS.split(',') : [],
 };
