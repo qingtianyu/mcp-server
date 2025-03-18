@@ -28,8 +28,6 @@ npm install
 # 生产环境构建
 npm run build
 
-# 启动服务（开发模式）
-npm run dev
 ```
 
 ### MCP 配置参数
