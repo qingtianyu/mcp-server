@@ -1,44 +1,15 @@
 import { apiClient } from '../config/http.js';
-import { config } from './env.js';
-
-// Dynamically read the OpenAPI definitions from the specified URL
-interface OpenApiParameter {
-    name: string;
-    in: string;
-    description: string;
-    required?: boolean;
-    schema?: {
-        type: string;
-        default?: any;
-    };
-}
-
-interface OpenApiMethod {
-    operationId: string;
-    summary: string;
-    parameters?: OpenApiParameter[];
-}
-
-interface OpenApiPath {
-    [key: string]: {
-        [method: string]: OpenApiMethod;
-    };
-}
-
-interface OpenApiData {
-    paths: OpenApiPath;
-}
-
-interface ApiEndpoint {
-    name: string;
-    description: string;
-    inputSchema: {
-        type: string;
-        properties: Record<string, any>;
-    } | {};
-    path: string;
-    method: string;
-}
+import { 
+    config, 
+    OpenApiData, 
+    OpenApiParameter, 
+    OpenApiPath, 
+    ApiEndpoint,
+    ApiConfig
+} 
+from './env.js';
+import fs from 'fs';
+import path from 'path';
 
 let cachedOpenApiData: OpenApiData | null = null;
 let lastFetchTime = 0;
@@ -96,15 +67,36 @@ const isExposableParameter = (param: OpenApiParameter): boolean => {
 
 // Fetch OpenAPI data
 const openApiData: { paths: OpenApiPath } = await fetchOpenApiData();
+const configFilePath = config.ALLOWED_APIS_CONFIG_PATH || path.resolve('api-config.json');
+let apiDescriptions: Record<string, ApiConfig> = {};
+// 尝试从配置文件读取 API 配置
+try {
+    if (fs.existsSync(configFilePath)) {
+        const configContent = fs.readFileSync(configFilePath, 'utf-8');
+        const apiConfigs = JSON.parse(configContent) as ApiConfig[];
+        apiDescriptions = apiConfigs.reduce((acc, apiConfig) => {
+            acc[apiConfig.path] = apiConfig;
+            return acc;
+        }, {} as Record<string, ApiConfig>);
+    } else {
+        config.ALLOWED_APIS.split(',').forEach(path => {
+            apiDescriptions[path] = { path, description: '' };
+        });
+    }
+} catch (error) {
+    console.error('读取配置文件失败:', error);
+    config.ALLOWED_APIS.split(',').forEach(path => {
+        apiDescriptions[path] = { path, description: '' };
+    });
+}
 
-// Filter out disallowed APIs and transform the data
 const API_ENDPOINTS = Object.entries(openApiData.paths)
-    .filter(([path]) => config.ALLOWED_APIS.includes(path))
+    .filter(([path]) => apiDescriptions[path])
     .map(([path, methods]) => {
         return Object.entries(methods).map(([method, details]) => {
             return {
                 name: details.operationId,
-                description: details.summary,
+                description: apiDescriptions[path]?.description || details.summary,
                 inputSchema: details.parameters ? {
                     type: 'object',
                     properties: Object.fromEntries(details.parameters

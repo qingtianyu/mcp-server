@@ -1,0 +1,10 @@
+[
+  {
+    "path": "/admin-api/system/user/page",
+    "description": "获取或查询用户分页列表接口"
+  },
+  {
+    "path": "/admin-api/system/role/page",
+    "description": "获取或查询用户角色分页列表接口"
+  }
+]

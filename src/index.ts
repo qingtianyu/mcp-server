@@ -8,8 +8,8 @@ import { initializeAuth } from './modules/auth/token.js';
 const transport = new StdioServerTransport();
 const server = new Server(
   {
-    name: 'api-server',
-    version: '1.0.0',
+    name: 'system-api-server',
+    version: '1.0.1',
   },
   {
     capabilities: {
