@@ -47,8 +47,7 @@ npm run build
         "PASSWORD": "xxx",
         "TENANT_ID": "1",
         "REJECT_UNAUTHORIZED": "false",
-        "ALLOWED_APIS": "/admin-api/system/user/page,/admin-api/system/user/create,/admin-api/system/user/update",
-        "ALLOWED_APIS_CONFIG_PATH": "path/to/api-config.json"
+        "ALLOWED_APIS": "/admin-api/system/user/page,/admin-api/system/user/create,/admin-api/system/user/update"
       },
       "disabled": false,
       "autoApprove": []
@@ -58,34 +57,9 @@ npm run build
 ```
 
 ### 配置说明
-有两种方式配置允许的API端点:
-
-1. **环境变量配置**: 通过 `ALLOWED_APIS` 环境变量指定允许的API路径列表，多个路径用逗号分隔
-2. **配置文件配置**: 通过 `ALLOWED_APIS_CONFIG_PATH` 环境变量指定配置文件路径，或使用默认路径 `api-config.json`
-
-#### API配置文件格式
-配置文件使用JSON格式，包含API路径和描述信息:
-
-```json
-[
-  {
-    "path": "/admin-api/system/user/page",
-    "description": "获取用户分页列表接口，pageSize等于-1时，代表查询所有数据。"
-  },
-  {
-    "path": "/admin-api/system/role/page",
-    "description": "获取角色分页列表接口，pageSize等于-1时，代表查询所有数据。"
-  }
-]
-```
-
-系统会优先使用配置文件中的API描述信息，如果配置文件不存在或读取失败，则回退到使用 `ALLOWED_APIS` 环境变量中指定的API列表。
+在 `mcpServers` 中配置 `ALLOWED_APIS` 数组来控制哪些API端点可以作为MCP工具暴露:
 
 ![alt text](image.png)
-
-![alt text](image-1.png)
-
-![alt text](image-2.png)
 
 ![alt text](image-3.png)
 
@@ -112,40 +86,14 @@ MCP-Server 实现了基于 OpenAPI 规范的动态工具发现和注册机制，
 // 从OpenAPI规范自动获取API端点信息
 const openApiData = await fetchOpenApiData();
 
-// 读取API配置文件
-const configFilePath = config.ALLOWED_APIS_CONFIG_PATH || path.resolve('api-config.json');
-let apiDescriptions = {};
-
-try {
-  // 优先从配置文件读取API配置
-  if (fs.existsSync(configFilePath)) {
-    const configContent = fs.readFileSync(configFilePath, 'utf-8');
-    const apiConfigs = JSON.parse(configContent);
-    apiDescriptions = apiConfigs.reduce((acc, apiConfig) => {
-      acc[apiConfig.path] = apiConfig;
-      return acc;
-    }, {});
-  } else {
-    // 如果配置文件不存在，则使用环境变量中的API列表
-    config.ALLOWED_APIS.split(',').forEach(path => {
-      apiDescriptions[path] = { path, description: '' };
-    });
-  }
-} catch (error) {
-  // 如果读取配置文件失败，则使用环境变量中的API列表
-  config.ALLOWED_APIS.split(',').forEach(path => {
-    apiDescriptions[path] = { path, description: '' };
-  });
-}
-
 // 根据配置的允许列表过滤API
 const API_ENDPOINTS = Object.entries(openApiData.paths)
-    .filter(([path]) => apiDescriptions[path])
+    .filter(([path]) => config.ALLOWED_APIS.includes(path))
     .map(([path, methods]) => {
         // 转换为标准工具格式
         return Object.entries(methods).map(([method, details]) => ({
             name: details.operationId,
-            description: apiDescriptions[path]?.description || details.summary,
+            description: details.summary,
             inputSchema: details.parameters ? {
                 type: 'object',
                 properties: Object.fromEntries(details.parameters
@@ -188,8 +136,6 @@ export function registerTools(server: Server) {
 
 ### 系统优势
 - **自动发现**: 通过 OpenAPI 规范自动发现和注册API端点
-- **配置灵活**: 支持环境变量和配置文件两种方式配置允许的API
-- **描述丰富**: 通过配置文件可以为API提供更详细的描述信息
 - **缓存机制**: 实现了API规范数据的缓存，提高性能并处理网络异常
 - **参数转换**: 自动将OpenAPI参数定义转换为MCP工具输入模式
 - **安全过滤**: 过滤内部参数，只暴露安全的API参数
