@@ -48,12 +48,13 @@ const fetchOpenApiData = async (): Promise<OpenApiData> => {
 const transformParameterToProperty = (param: OpenApiParameter) => {
     return [
         param.name,
-        {
-            type: param.schema?.type || 'string',
-            description: param.description,
-            nullable: param.required ? false : true,
-            default: param.schema?.default,
-        }
+        // {
+        //     type: param.schema?.type || 'string',
+        //     description: param.description,
+        //     nullable: param.required ? false : true,
+        //     default: param.schema?.default,
+        // }
+        param.schema
     ];
 };
 
