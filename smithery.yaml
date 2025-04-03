@@ -13,6 +13,14 @@ startCommand:
         "build/index.js"
       ],
       "env": {
-
+        "BASE_URL": "",
+        "CLIENT_ID": "",
+        "CLIENT_SECRET": "",
+        "USERNAME": "",
+        "PASSWORD": "",
+        "TENANT_ID": "",
+        "REJECT_UNAUTHORIZED": "false",
+        "ALLOWED_APIS": "",
+        "MCP_CONFIG_PATH": "api-config.json"
       }
     })
