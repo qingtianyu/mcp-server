@@ -6,10 +6,7 @@ export interface OpenApiParameter {
   in: string;
   description: string;
   required?: boolean;
-  schema?: {
-      type: string;
-      default?: any;
-  };
+  schema?: {};
 }
 
 export interface OpenApiMethod {

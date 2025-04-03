@@ -22,7 +22,6 @@ export function registerTools(server: Server) {
       if (!endpoint) {
         throw new McpError(ErrorCode.MethodNotFound, '未知的工具方法');
       }
-      console.log('endpoint', endpoint);
       if(endpoint.method === 'GET') {
         const params = request.params.arguments;
         const response = await apiClient.get(endpoint.path, { params });
