@@ -15,4 +15,15 @@ COPY . .
 RUN npm run build
 
 # Command will be provided by smithery.yaml
-# CMD ["node", "build/index.js"]
+# Set the environment variables
+ENV BASE_URL=""
+ENV CLIENT_ID=""
+ENV CLIENT_SECRET=""
+ENV USERNAME=""
+ENV PASSWORD=""
+ENV TENANT_ID=""
+ENV REJECT_UNAUTHORIZED="false"
+ENV ALLOWED_APIS=""
+ENV MCP_CONFIG_PATH="api-config.json"
+
+CMD ["node", "build/index.js"]
