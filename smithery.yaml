@@ -1,0 +1,26 @@
+# Smithery.ai configuration
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    {}
+  commandFunction:
+    # A function that produces the CLI command to start the MCP on stdio.
+    |-
+    (config) => ({
+      "command": "node",
+      "args": [
+        "build/index.js"
+      ],
+      "env": {
+        "BASE_URL": "",
+        "CLIENT_ID": "",
+        "CLIENT_SECRET": "",
+        "USERNAME": "",
+        "PASSWORD": "",
+        "TENANT_ID": "",
+        "REJECT_UNAUTHORIZED": "false",
+        "ALLOWED_APIS": "",
+        "MCP_CONFIG_PATH": "api-config.json"
+      }
+    })

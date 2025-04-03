@@ -1,6 +1,6 @@
 {
-  "name": "mcp-api-server",
-  "version": "1.0.1",
+  "name": "system-api-server",
+  "version": "1.0.2",
   "description": "mcp yudao api server",
   "private": true,
   "type": "module",
