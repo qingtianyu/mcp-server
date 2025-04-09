@@ -130,4 +130,3 @@ export const apiMap = API_ENDPOINTS.reduce((acc, endpoint) => {
     acc[endpoint.name] = endpoint;
     return acc;
 }, {} as Record<string, typeof API_ENDPOINTS[number]>);
-console.error('tools:', JSON.stringify(tools));
