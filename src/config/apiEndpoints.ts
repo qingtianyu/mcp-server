@@ -5,7 +5,8 @@ import {
     OpenApiParameter, 
     OpenApiPath, 
     ApiEndpoint,
-    ApiConfig
+    ApiConfig,
+    Properties
 } 
 from './env.js';
 import fs from 'fs';
@@ -45,16 +46,21 @@ const fetchOpenApiData = async (): Promise<OpenApiData> => {
 /**
  * Transforms OpenAPI parameter to input schema property
  */
-const transformParameterToProperty = (param: OpenApiParameter) => {
+const transformParameterToProperty = (param: OpenApiParameter, configProperties: Record<string, Properties>) => {
+    const configProperty = configProperties[param.name];
+    // 如果type=null，那么就过滤掉这个字段
+    if(configProperty && configProperty.type === null) {
+        return [];
+    }
     return [
         param.name,
-        // {
-        //     type: param.schema?.type || 'string',
-        //     description: param.description,
-        //     nullable: param.required ? false : true,
-        //     default: param.schema?.default,
-        // }
-        param.schema
+        {
+            type: configProperty?.type || param.schema?.type || 'string',
+            description: configProperty?.description || param.description || '',
+            nullable: configProperty?.nullable !== undefined ? configProperty.nullable : !param.required,
+            default: configProperty?.default || param.schema?.default,
+            items: configProperty?.items || param.schema?.items || undefined
+        } as Properties
     ];
 };
 
@@ -81,13 +87,13 @@ try {
         }, {} as Record<string, ApiConfig>);
     } else {
         config.ALLOWED_APIS.split(',').forEach(path => {
-            apiDescriptions[path] = { path, description: '' };
+            apiDescriptions[path] = { path, description: '', properties: {} };
         });
     }
 } catch (error) {
     console.error('读取配置文件失败:', error);
     config.ALLOWED_APIS.split(',').forEach(path => {
-        apiDescriptions[path] = { path, description: '' };
+        apiDescriptions[path] = { path, description: '', properties: {} };
     });
 }
 
@@ -95,6 +101,7 @@ const API_ENDPOINTS = Object.entries(openApiData.paths)
     .filter(([path]) => apiDescriptions[path])
     .map(([path, methods]) => {
         return Object.entries(methods).map(([method, details]) => {
+            const properties = apiDescriptions[path]?.properties || {};
             return {
                 name: details.operationId,
                 description: apiDescriptions[path]?.description || details.summary,
@@ -102,7 +109,7 @@ const API_ENDPOINTS = Object.entries(openApiData.paths)
                     type: 'object',
                     properties: Object.fromEntries(details.parameters
                         .filter(isExposableParameter)
-                        .map(transformParameterToProperty)
+                        .map(param => transformParameterToProperty(param, properties))
                     )
                 } : {},
                 path: path,
@@ -123,3 +130,4 @@ export const apiMap = API_ENDPOINTS.reduce((acc, endpoint) => {
     acc[endpoint.name] = endpoint;
     return acc;
 }, {} as Record<string, typeof API_ENDPOINTS[number]>);
+console.error('tools:', JSON.stringify(tools));

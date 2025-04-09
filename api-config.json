@@ -1,7 +1,47 @@
 [
   {
     "path": "/admin-api/system/user/page",
-    "description": "获取或查询用户分页列表接口"
+    "description": "获取或查询用户分页列表接口",
+    "properties": {
+      "deptId": {
+        "type": "string",
+        "description": "部门ID",
+        "nullable": true
+      },
+      "username": {
+        "type": "string",
+        "description": "用户名",
+        "nullable": true
+      },
+      "mobile": {
+        "type": "string",
+        "description": "手机号",
+        "nullable": true
+      },
+      "status": {
+        "type": "number",
+        "description": "状态：0-正常，1-停用",
+        "nullable": true
+      },
+      "createTime": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "创建时间范围",
+        "nullable": true
+      },
+      "pageNo": {
+        "type": "number",
+        "description": "页码",
+        "default": 1
+      },
+      "pageSize": {
+        "type": "number",
+        "description": "每页条数",
+        "default": 10
+      }
+    }
   },
   {
     "path": "/admin-api/system/role/page",

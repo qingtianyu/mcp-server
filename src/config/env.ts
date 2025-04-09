@@ -1,12 +1,21 @@
 import 'dotenv/config';
 
 // Dynamically read the OpenAPI definitions from the specified URL
+
+export interface Properties {
+  type: string;
+  description: string;
+  nullable?: boolean;
+  default?: string | number;
+  items?: { type: string };
+}
+
 export interface OpenApiParameter {
   name: string;
   in: string;
   description: string;
   required?: boolean;
-  schema?: {};
+  schema?: Properties;
 }
 
 export interface OpenApiMethod {
@@ -28,6 +37,7 @@ export interface OpenApiData {
 export interface ApiConfig {
   path: string;
   description: string;
+  properties?: Record<string, Properties>;
 }
 
 export interface ApiEndpoint {
@@ -35,7 +45,7 @@ export interface ApiEndpoint {
   description: string;
   inputSchema: {
       type: string;
-      properties: Record<string, any>;
+      properties: Record<string, Properties>;
   } | {};
   path: string;
   method: string;
